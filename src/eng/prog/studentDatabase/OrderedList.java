@@ -24,7 +24,7 @@ public abstract class OrderedList extends List {
             return null;
         ListNode first = firstNode;
         ListNode last = lastNode;
-        do
+        while (last == null || last != first)
         {
             ListNode mid = getMid(first, last);
             if (compare(mid.data,data) == 0)
@@ -33,7 +33,7 @@ public abstract class OrderedList extends List {
                 first = mid.next;
             else
                 last = mid;
-        } while (last == null || last != first);
+        }
         return null;
     }
 

@@ -1,7 +1,8 @@
 package eng.prog.studentDatabase;
 
-import java.util.InputMismatchException;
-import java.util.Scanner;
+import java.util.*;
+import java.io.*;
+import java.util.regex.PatternSyntaxException;
 
 public class StudentRecordOrderedListTest {
     // get a valid float input from user
@@ -92,17 +93,118 @@ public class StudentRecordOrderedListTest {
         return parsable;
     }
 
+    public static boolean allAlphNum(String[] parsable) {
+        try {
+            if(parsable[0] == null)
+                return false;
+            for (String s : parsable) {
+                if(s.matches("^.*[^a-zA-Z0-9 ].*$"))
+                    return false;
+            }
+        }
+        catch (PatternSyntaxException e)
+        {
+            System.out.printf("%s: invalid regex.\n", e);
+            return false;
+        }
+        return true;
+    }
+    
+    public static void readFile(String filePath,StudentRecordOrderedList records) {
+        try {
+            int count = 0;
+            File dataFile = new File(filePath);
+            Scanner input = new Scanner(dataFile);
+            while (input.hasNextLine()) {
+                String[] line = input.nextLine().split(" ");
+                System.out.println(line.length);
+                switch (line.length) {
+                    case 3 -> {
+                        if (line[2].matches("-?\\d+")) {
+                            records.insert(new StudentRecord(line[0], line[1], Integer.parseInt(line[2])));
+                            count++;
+                        }
+                    }
+                    case 4 -> {
+                        if (line[2].matches("-?\\d+") && line[3].matches("-?\\d+(\\.\\d+)?")) {
+                            records.insert(new StudentRecord(line[0], line[1], Integer.parseInt(line[2]), Float.parseFloat(line[3])));
+                            count++;
+                        }
+                    }
+                    default -> System.out.println("Line did not contain valid information.");
+                }
+            }
+            input.close();
+            System.out.println(count + " records were added.");
+        } catch (FileNotFoundException e) {
+            System.out.printf("%s: Data file \"" + filePath + "\" was not found.\n",e);
+        }
+    }
+
+    public static void writeFile(String filePath,StudentRecordOrderedList records) {
+        try {
+            File f = new File(filePath);
+            if (f.createNewFile()) {
+                System.out.println("File created: " + f.getName());
+            }
+            FileWriter fileWriter = new FileWriter(filePath);
+            PrintWriter output = new PrintWriter(fileWriter);
+            ListNode thisNode = records.firstNode;
+            while (thisNode != null) {
+                output.printf("%s %s %d %f\n",((StudentRecord)thisNode.data).surname,
+                        ((StudentRecord)thisNode.data).name,((StudentRecord)thisNode.data).studentNo,
+                        ((StudentRecord)thisNode.data).averageMark);
+                thisNode = thisNode.next;
+            }
+            System.out.println("Records saved to system.");
+            output.close();
+        } catch (FileNotFoundException e) {
+            System.out.printf("%s: Data file \"" + filePath + "\" was not found.\n",e);
+            System.exit(1);
+        } catch (IOException e) {
+            System.out.printf("%s: Could not write to file.\n",e);
+            System.exit(1);
+        }
+    }
+            /*// open file to write lines to it
+            FileWriter fileWriter = new FileWriter(filePath);
+            PrintWriter output = new PrintWriter(fileWriter);
+            output.println("hello");
+            output.println("there");
+            output.close();
+        }
+        catch (FileNotFoundException e) {
+            System.out.println("data file \"" + filePath + "\" does not exist!");
+            System.exit(1);
+        }
+        catch (IOException e) {
+            System.out.println("cannot open PrintWriter to" + args[0]);
+            System.exit(1);
+        }
+    }*/
+
     public static void main(String[] args) {
         boolean end = false;
         Scanner scan = new Scanner(System.in);
         StudentRecordOrderedList records = new StudentRecordOrderedList();
+        String filePath;
+        if(args.length == 1) {
+            filePath = args[0];
+            readFile(filePath, records);
+        }
+        else {
+            filePath = "C:\\Users\\yolan\\IdeaProjects\\UCL\\studentRecords.txt";
+            readFile(filePath, records);
+        }
         do {
-            System.out.println("\nWhat would you like to do?" +
-                    "\n1. Create a new student record." +
-                    "\n2. Remove a record." +
-                    "\n3. Adjust/add average mark." +
-                    "\n4. Print all records." +
-                    "\n5. Exit program.");
+            System.out.println("""
+
+                    What would you like to do?
+                    1. Create a new student record.
+                    2. Remove a record.
+                    3. Adjust/add average mark.
+                    4. Print all records.
+                    5. Exit program.""");
             int choice = getInt(scan);
             scan.nextLine();
             switch (choice) {
@@ -132,10 +234,10 @@ public class StudentRecordOrderedListTest {
                         System.out.println("Student not found.");
                     }
                 }
-                case 4 -> {
-                    System.out.println(records.getSize() + " Student Records:\n" + records);
-                }
-                case 5 -> end = true; // end program
+                case 4 -> System.out.println(records.getSize() + " Student Records:\n" + records);
+                case 5 -> {
+                    writeFile(filePath,records);
+                    end = true;} // end program
                 default -> System.out.println("Option not found."); // invalid menu option
             }
         } while (!end);

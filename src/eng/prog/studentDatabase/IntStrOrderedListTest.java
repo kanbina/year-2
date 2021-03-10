@@ -1,6 +1,7 @@
 package eng.prog.studentDatabase;
 
 import java.util.*;
+import java.util.regex.PatternSyntaxException;
 
 public class IntStrOrderedListTest {
     // get a valid int input from user
@@ -24,14 +25,22 @@ public class IntStrOrderedListTest {
     }
 
     public static String[] parseInputs(Scanner scan) {
-        String in = scan.nextLine();
-        String key = " ";
-        String[] parsable;
-        if (in.contains(",")) {
-            in = in.replaceAll("\\s+", "");
-            key = ",";
+        boolean invalid = true;
+        String[] parsable = null;
+        while(invalid) {
+            String in = scan.nextLine();
+            String key = " ";
+            if (in.contains(",")) {
+                in = in.replaceAll("\\s+", "");
+                key = ",";
+            }
+            parsable = in.split(key);
+            if (allAlphNum(parsable))
+                invalid = false;
+            else {
+                System.out.println("Invalid inputs: Inputs were not alphanumeric. Please try again.");
+            }
         }
-        parsable = in.split(key);
         return parsable;
     }
 
@@ -41,6 +50,23 @@ public class IntStrOrderedListTest {
                 Integer.parseInt(s);
             }
         } catch (NumberFormatException e) {
+            return false;
+        }
+        return true;
+    }
+
+    public static boolean allAlphNum(String[] parsable) {
+        try {
+            if(parsable[0] == null)
+                return false;
+            for (String s : parsable) {
+                if(s.matches("^.*[^a-zA-Z0-9 ].*$"))
+                    return false;
+            }
+        }
+        catch (PatternSyntaxException e)
+        {
+            System.out.printf("%s: invalid regex.\n", e);
             return false;
         }
         return true;
@@ -59,11 +85,13 @@ remove a number/string, etc.
         IntegerOrderedList intList = new IntegerOrderedList();
         StringOrderedList strList = new StringOrderedList();
         do {
-            System.out.println("\nWhat would you like to do?" +
-                    "\n1. Insert new object(s) into ordered list." +
-                    "\n2. Remove an existing object." +
-                    "\n3. Print your lists so far." +
-                    "\n4. Exit program.");
+            System.out.println("""
+
+                    What would you like to do?
+                    1. Insert new object(s) into ordered list.
+                    2. Remove an existing object.
+                    3. Print your lists so far.
+                    4. Exit program.""");
             int choice = getInt(scan);
             scan.nextLine();
             switch (choice) {
