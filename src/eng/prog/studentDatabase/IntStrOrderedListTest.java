@@ -27,58 +27,48 @@ public class IntStrOrderedListTest {
     public static String[] parseInputs(Scanner scan) {
         boolean invalid = true;
         String[] parsable = null;
-        while(invalid) {
-            String in = scan.nextLine();
-            String key = " ";
-            if (in.contains(",")) {
-                in = in.replaceAll("\\s+", "");
-                key = ",";
-            }
-            parsable = in.split(key);
-            if (allAlphNum(parsable))
-                invalid = false;
-            else {
-                System.out.println("Invalid inputs: Inputs were not alphanumeric. Please try again.");
-            }
+        String in = scan.nextLine();
+        String key = " ";
+        if (in.contains(",")) {
+            in = in.replaceAll("\\s+", "");
+            key = ",";
         }
-        return parsable;
+        parsable = in.split(key);
+        int count = 0;
+        for (String s : parsable) {
+            if (!isAlphNum(s)) {
+                parsable[count] = null;
+                System.out.printf("%s: input was not alphanumeric and removed.\n",s);
+            }
+            count++;
+        }
+        String[] cleaned = Arrays.stream(parsable).filter(Objects::nonNull).toArray(String[]::new);
+        System.out.println(Arrays.toString(cleaned));
+        return cleaned;
     }
 
-    public static boolean allInt(String[] parsable) {
+    public static boolean isInt(String s) {
         try {
-            for (String s : parsable) {
-                Integer.parseInt(s);
-            }
+            Integer.parseInt(s);
         } catch (NumberFormatException e) {
             return false;
         }
         return true;
     }
 
-    public static boolean allAlphNum(String[] parsable) {
+    public static boolean isAlphNum(String s) {
         try {
-            if(parsable[0] == null)
-                return false;
-            for (String s : parsable) {
-                if(s.matches("^.*[^a-zA-Z0-9 ].*$"))
-                    return false;
-            }
+            if(s.matches("^[a-zA-Z]*$|^-?(0|[1-9]\\d*)$")) // /^-?(0|[1-9]\d*)$/
+                return true;
         }
         catch (PatternSyntaxException e)
         {
             System.out.printf("%s: invalid regex.\n", e);
             return false;
         }
-        return true;
+        return false;
     }
 
-    /*
-    This should be done by getting a series of numbers or strings from the standard input, inserting
-them and printing any of the two lists when required. It should also support simply finding an
-element and also removing an element the user specifies. You should also implement a small
-menu to guide the user through activities to enter numbers/strings, print the appropriate list,
-remove a number/string, etc.
-     */
     public static void main(String[] args) {
         boolean end = false;
         Scanner scan = new Scanner(System.in);
@@ -98,34 +88,29 @@ remove a number/string, etc.
                 case 1 -> {
                     System.out.println("Please print your input(s) on a single line.");
                     String[] parsable = parseInputs(scan);
-                    if (allInt(parsable)) {
-                        for (String s : parsable) {
+                    System.out.println("finished parseInputs");
+                    for (String s : parsable) {
+                        if(isInt(s)) {
                             intList.insert(Integer.parseInt(s));
-                            System.out.println("Inserted " + s);
+                            System.out.println("Inserted " + s + " to int list.");
                         }
-                    } else {
-                        for (String s : parsable)
+                        else {
                             strList.insert(s);
+                            System.out.println("Inserted " + s + " to string list.");
+                        }
                     }
                 }
                 case 2 -> {
                     System.out.println("Please print your input(s) on a single line.");
                     String[] parsable = parseInputs(scan);
-                    if (allInt(parsable)) {
-                        boolean successful = true;
-                        for (String s : parsable) {
-                            if (intList.remove(Integer.parseInt(s))==null)
-                                successful = false;
-                        }
-                        if(!successful) // edge case where ints exist in string input
-                        {
-                            System.out.println("Testing string ordered list...");
-                            for (String s : parsable)
-                                strList.remove(s);
-                        }
-                    } else {
-                        for (String s : parsable)
+                    for (String s : parsable) {
+                        if (isInt(s)) {
+                            intList.remove(Integer.parseInt(s));
+                            System.out.println("Removed " + s + " from int list.");
+                        } else {
                             strList.remove(s);
+                            System.out.println("Removed " + s + " from string list.");
+                        }
                     }
                 }
                 case 3 -> {

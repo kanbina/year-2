@@ -64,10 +64,10 @@ public class StudentRecordOrderedListTest {
 
     public static StudentRecord makeNewSR (Scanner scan) {
         System.out.println("Please print the surname: ");
-        String last = scan.next().toLowerCase();
+        String last = getAlph(scan);
         scan.nextLine();
         System.out.println("Please print the first name: ");
-        String first = scan.next().toLowerCase();
+        String first = getAlph(scan);
         System.out.println("Please print the student number (greater than 0): ");
         int sn = getInt(scan);
         System.out.println("Please print the student's average mark or 0 if unavailable (0% to 100%): ");
@@ -93,21 +93,23 @@ public class StudentRecordOrderedListTest {
         return parsable;
     }
 
-    public static boolean allAlphNum(String[] parsable) {
-        try {
-            if(parsable[0] == null)
-                return false;
-            for (String s : parsable) {
-                if(s.matches("^.*[^a-zA-Z0-9 ].*$"))
-                    return false;
+    public static String getAlph(Scanner scan) {
+        boolean invalid = true;
+        String s = "";
+        while (invalid) // loop until valid input
+        {
+            try {
+                s = scan.next().toLowerCase();
+                if (s.matches("^[a-z]*$"))
+                    invalid = false;
+                else
+                    System.out.println("Input must be in alphabetical format.");
+            } catch (PatternSyntaxException e) {
+                System.out.printf("%s: invalid regex.\n", e);
+                scan.nextLine();
             }
         }
-        catch (PatternSyntaxException e)
-        {
-            System.out.printf("%s: invalid regex.\n", e);
-            return false;
-        }
-        return true;
+        return s;
     }
     
     public static void readFile(String filePath,StudentRecordOrderedList records) {
@@ -166,22 +168,6 @@ public class StudentRecordOrderedListTest {
             System.exit(1);
         }
     }
-            /*// open file to write lines to it
-            FileWriter fileWriter = new FileWriter(filePath);
-            PrintWriter output = new PrintWriter(fileWriter);
-            output.println("hello");
-            output.println("there");
-            output.close();
-        }
-        catch (FileNotFoundException e) {
-            System.out.println("data file \"" + filePath + "\" does not exist!");
-            System.exit(1);
-        }
-        catch (IOException e) {
-            System.out.println("cannot open PrintWriter to" + args[0]);
-            System.exit(1);
-        }
-    }*/
 
     public static void main(String[] args) {
         boolean end = false;
